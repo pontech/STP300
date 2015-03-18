@@ -3,6 +3,7 @@
 #include "Half_Duplex_Turnaround.h"
 #include <SPI.h>
 #include <dSPIN_L6472.h>
+#include <EEPROM.h>
 
 #include "pic32lib/DetectEdge.h"
 #include "pic32lib/TokenParser.h"
@@ -11,7 +12,43 @@
 #include "pic32lib/Cron.h"
 
 Cron cron(micros);
-#line 15 "YZ_Unit.pde"
+#line 15 "STP300.pde"
+
+typedef struct {
+  us8 movingCurrent; //TVAL is seven bits us8 is plenty
+  us8 holdingCurrent;
+  bool homeswitchnc;
+  bool stophomingonly;
+  us8 structend;
+} ram_struct;
+
+ram_struct ram;
+
+void set_default_ram() {
+  ram.movingCurrent = 47; //TVAL is seven bits us8 is plenty
+  ram.holdingCurrent = 15;
+  ram.homeswitchnc = true;
+  ram.stophomingonly = false;
+  ram.structend = 0xA5;
+}
+void eeprom_in(us8* Data,us16 eeprom_adress,us16 bytes) {
+  int i;
+  for(i=0;i<bytes;i++){
+    EEPROM.write(eeprom_adress++, *Data++);
+  }
+}
+void eeprom_out(us16 eeprom_adress,us8* Data,us16 bytes) {
+  int i;
+  for(i=0;i<bytes;i++){
+    *(Data++) = EEPROM.read(eeprom_adress++);
+  }
+}
+//  //save setting to eeprom
+//  eeprom_in((us8*)&ram,0,sizeof(ram));
+//  eeprom_out(0,(us8*)&ram,sizeof(ram)); //get structure from memory
+//  if (ram.structend != 42)
+//    set_default_ram();
+
 #define Enable485 68
 #define RelayOut 28
 
@@ -39,104 +76,23 @@ Properties properties(24);
 
 unsigned char ReadJumper()
 {
-  //possible values 0,2,3,4,5,6,7,8,9,10,11,12,13,15(6,9 have 2 methods)
   pinMode(pJP0, INPUT);
   pinMode(pJP1, INPUT);
   pinMode(pJP2, INPUT);
-  pinMode(pJP3, INPUT);
   unsigned char val = 0;
   if (digitalRead(pJP0) == LOW)
   {
-    val += 2;
+    val += 1;
   }
   if (digitalRead(pJP1) == LOW)
   {
-    val += 3;
+    val += 2;
   }
   if (digitalRead(pJP2) == LOW)
   {
     val += 4;
   }
-  if (digitalRead(pJP3) == LOW)
-  {
-    val += 6;
-  }
   return val;
-}
-
-// catch ZeroYAxis property updates
-void zeroAxisHandler(String var) {
-  if((var == "true") && (properties.value("Power") == "true")) {
-    Setup_dSPIN(axis);
-    cron.add(zeroAxisTask);
-  }
-  else {
-    axis.softStop();
-    cron.stopByFunction(zeroAxisTask);
-  }
-}
-
-// catch Power property updates
-void powerHandler(String var) {
-  if(var == "true") {
-    // enable motor power
-    axis.hardStop();
-  }
-  else {
-    // disable motor power
-    axis.free();
-  }
-}
-
-void axisHandler(String var) {
-  if(properties.value("Power") == "true") {
-    axis.goTo(Variant::fromString(var).toInt());
-  }
-}
-
-void zeroAxisTask() {
-  Cron::CronDetail *self = cron.self();
-  
-  switch(self->temp) {
-  case 0:
-    if(!axis.isBusy()) {
-      //usb.println("axis backoff flag");
-      axis.move(100);
-      self->temp++;
-    }
-    break;
-  case 1:
-    if(!axis.isBusy()) {
-      //usb.println("axis approach flag");
-      axis.move(-2000000);
-      self->temp++;
-    }
-    break;
-  case 2:
-    if(!axis.isBusy()) {
-      if(digitalRead(posHome)) { //if(getHomeSensorStatus()) {
-        //usb.println("axis homed");
-      }
-      else {
-        //usb.println("axis timeout");
-      }
-      //setHomeSensor(0);
-      axis.move(0.1);
-      self->temp++;
-//    } else {
-//      if(digitalRead(XAxisHome)) { //if(getHomeSensorStatus()) {
-//        xaxis.hardStop();
-//      }
-    }
-    break;
-  case 3:
-    if(!axis.isBusy()) {
-      properties.update("ZeroAxis", "false");
-      axis.setAsHome();
-      return;
-    }
-  }
-  self->yield = micros() + 10000;
 }
 
 void flash() {
@@ -156,7 +112,7 @@ void Setup_dSPIN(L6472 &motor)
   SPI.setClockDivider(SPI_CLOCK_DIV16); // or 2, 8, 16, 32, 64
   SPI.setDataMode(SPI_MODE3);	
 
-  res = motor.init(1.5, 0.1f);
+  res = motor.init(1.5, 0.2f);
       
   motor.setMicroSteps(16); //1,2,4,8,16
 
@@ -169,6 +125,7 @@ void Setup_dSPIN(L6472 &motor)
 }
 
 void setup() {
+  RCON = 2;
   Serial.begin(115200); // enable usb communication
   MySerial0.begin(115200); // enable rs485 communication
   Wire.begin();
@@ -178,9 +135,9 @@ void setup() {
   pinMode(RelayOut,OUTPUT);
   digitalWrite(RelayOut,LOW);
 
-  properties.addBool("Power", false, powerHandler);
-  properties.addNumber("Axis", 0, axisHandler);
-  properties.addBool("ZeroAxis", false, zeroAxisHandler);
+  eeprom_out(0,(us8*)&ram,sizeof(ram)); //get structure from memory
+  if (ram.structend != 0xA5)
+    set_default_ram();
 
   Setup_dSPIN(axis);
   axis.hardStop();
@@ -193,26 +150,80 @@ void setup() {
 
 void loop() {
   cron.scheduler();
-  axis.sensorStop(posHome, true, true);
-  axis.sensorStop(negHome, true, false);
+  if(!ram.stophomingonly || axis.getHRunning()) //if motor is homing or homingonly not set
+  {
+    axis.sensorStop(posHome, ram.homeswitchnc, true);
+    axis.sensorStop(negHome, ram.homeswitchnc, false);
+  }
   
   if(usb.scan()) {
-    properties.evaluate(usb);
+//    properties.evaluate(usb);
     usb.save(); //save head and tail
     usb.advanceHead(usb.remaining());
     String stufftosend = usb.toString();
     axis.command(&stufftosend[0], &Serial);
     usb.restore(); //restore head and tail
+    if((usb.toString()[0] == '/') && (axis.parseNumber(&(usb.toString()[1])) == ReadJumper())) {
+      usb.nextToken();
+      if(usb.compare("relay")){
+        usb.nextToken();
+        int hold = usb.toVariant().toInt();
+        digitalWrite(RelayOut,hold);
+        usb.print("OK\r");
+      }
+      else if(usb.compare("switchtype")){
+        usb.nextToken();
+        int hold = usb.toVariant().toInt();
+        if(hold > 0)
+        {
+          ram.homeswitchnc = true;
+          usb.print("1\r");
+        }
+        else
+        {
+          ram.homeswitchnc = false;
+          usb.print("0\r");
+        }
+        //save setting to eeprom
+        eeprom_in((us8*)&ram,0,sizeof(ram));
+      }
+      else if(usb.compare("stoptype")){
+        usb.nextToken();
+        int hold = usb.toVariant().toInt();
+        if(hold > 0)
+        {
+          ram.stophomingonly = true;
+          usb.print("1\r");
+        }
+        else
+        {
+          ram.stophomingonly = false;
+          usb.print("0\r");
+        }
+        //save setting to eeprom
+        eeprom_in((us8*)&ram,0,sizeof(ram));
+      }
+      else if(usb.compare("reset")){
+        Serial.println("Close serial terminal, resetting board in...");
+        us8 sec;
+        for( sec = 5; sec >= 1; sec-- ) {
+          Serial.print(sec, DEC);
+          Serial.println(" seconds...");
+          delay(1000);
+        }
+        Reset();
+      }
+    }
   }
   if(rs485.scan()) {
-    properties.evaluate(rs485);
+//    properties.evaluate(rs485);
     rs485.save(); //save head and tail
     rs485.advanceHead(rs485.remaining());
     String stufftosend = rs485.toString();
     //Serial.println(stufftosend);
     axis.command(&stufftosend[0], &MySerial0);
     rs485.restore(); //restore head and tail
-    if((rs485.toString()[0] == '/') && (rs485.toString()[1] == ReadJumper() + '0')) {
+    if((rs485.toString()[0] == '/') && (axis.parseNumber(&(rs485.toString()[1])) == ReadJumper())) {
       rs485.nextToken();
       if(rs485.compare("relay")){
         rs485.nextToken();
@@ -220,7 +231,53 @@ void loop() {
         digitalWrite(RelayOut,hold);
         rs485.print("OK\r");
       }
+      else if(rs485.compare("switchtype")){
+        rs485.nextToken();
+        int hold = rs485.toVariant().toInt();
+        if(hold > 0)
+        {
+          ram.homeswitchnc = true;
+          rs485.print("1\r");
+        }
+        else
+        {
+          ram.homeswitchnc = false;
+          rs485.print("0\r");
+        }
+        //save setting to eeprom
+        eeprom_in((us8*)&ram,0,sizeof(ram));
+      }
+      else if(rs485.compare("stoptype")){
+        rs485.nextToken();
+        int hold = rs485.toVariant().toInt();
+        if(hold > 0)
+        {
+          ram.stophomingonly = true;
+          rs485.print("1\r");
+        }
+        else
+        {
+          ram.stophomingonly = false;
+          rs485.print("0\r");
+        }
+        //save setting to eeprom
+        eeprom_in((us8*)&ram,0,sizeof(ram));
+      }
     }
   }
+}
+void Reset()
+{
+#ifdef VIRTUAL_PROGRAM_BUTTON_TRIS
+  VIRTUAL_PROGRAM_BUTTON_TRIS = 0; //Set virtual button as output
+  VIRTUAL_PROGRAM_BUTTON = 1; //push virtual button
+#endif
+  SYSKEY = 0x00000000;  //write invalid key to force lock
+  SYSKEY = 0xAA996655;  //write key1 to SYSKEY
+  SYSKEY = 0x556699AA;  //write key2 to SYSKEY  // OSCCON is now unlocked
+  RSWRSTSET = 1; //set SWRST bit to arm reset
+  unsigned int dummy;
+  dummy = RSWRST; //read RSWRST register to trigger reset
+  while(1); //prevent any unwanted code execution until reset occurs
 }
 

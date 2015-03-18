@@ -323,6 +323,8 @@ class L6472{
     
 	unsigned int GetParam(byte param);
   	void SetParam(byte param, unsigned int value);
+  	
+  	bool getHRunning();
   private:
   	
   	int convert(unsigned int val);
@@ -352,6 +354,7 @@ class L6472{
 	long _DestinationPosition;
 	long _current;
 	long _current_holding;
+	bool _HRunning;
 	
 };
 #endif

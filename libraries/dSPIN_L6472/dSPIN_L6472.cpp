@@ -127,25 +127,29 @@ void L6472::command(char* input, Stream* IOStream)
     }
     else if(strncmp(rxBuffParsPoint, "H+",2) == 0)  // Home at Speed and direction
     {
-      goUntil(ACT_ACTIVE_LO, 1, 4000); //todo 3: get to move at same speed as other move commands
+      goUntil(ACT_ACTIVE_LO, 1, 20000); //todo 3: get to move at same speed as other move commands
+      _HRunning = true;
       sprintf(str, "OK%s",lineend);
       _IOStream->print(str);
     }  
     else if(strncmp(rxBuffParsPoint, "H-",2) == 0)  // Home at Speed and direction
     {
-      goUntil(ACT_ACTIVE_LO, 0, 4000);                                            
+      goUntil(ACT_ACTIVE_LO, 0, 20000);                                            
+      _HRunning = true;
       sprintf(str, "OK%s",lineend);
       _IOStream->print(str);
     }  
     else if(strncmp(rxBuffParsPoint, "HI",2) == 0)  // Home at Speed and direction
     {
       hardStop();
+      _HRunning = false;
       sprintf(str, "OK%s",lineend);
       _IOStream->print(str);
     }  
     else if(strncmp(rxBuffParsPoint, "H0",2) == 0)  // Home at Speed and direction
     {
       softStop();                                            
+      _HRunning = false;
       sprintf(str, "OK%s",lineend);
       _IOStream->print(str);
     }  
@@ -470,6 +474,8 @@ unsigned long val = CONFIG_TSW_124_us | CONFIG_SR_110V_us | CONFIG_TQ_INTERNAL |
 	hardStop(); //engage motors
 	
 	_DestinationPosition = 0;
+	_HRunning = false;
+	
 
 	return res;
 }
@@ -714,8 +720,15 @@ void L6472::sensorStop(char pin, bool rising, bool positive){
   if((forward && positive) || (!forward && !positive))
   {
     if((digitalRead(pin) && rising) || (!digitalRead(pin) && !rising))
+    {
       hardStop();
+      _HRunning = false;
+    }
   }
+}
+
+bool L6472::getHRunning(){
+  return _HRunning;
 }
 
 void L6472::releaseSW(byte act, byte dir){
