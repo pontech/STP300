@@ -268,6 +268,17 @@ void loop() {
 }
 void Reset()
 {
+  // The VIRTUAL PROGRAM BUTTONS are not defined in the variants
+  // so its done here (for now)
+#ifndef VIRTUAL_PROGRAM_BUTTON_TRIS
+#define VIRTUAL_PROGRAM_BUTTON_TRIS
+
+#define USE_VIRTUAL_PROGRAM_BUTTON      1
+#define VIRTUAL_PROGRAM_BUTTON_TRIS     TRISDbits.TRISD4
+#define VIRTUAL_PROGRAM_BUTTON          LATDbits.LATD4
+
+#endif
+
 #ifdef VIRTUAL_PROGRAM_BUTTON_TRIS
   VIRTUAL_PROGRAM_BUTTON_TRIS = 0; //Set virtual button as output
   VIRTUAL_PROGRAM_BUTTON = 1; //push virtual button
