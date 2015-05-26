@@ -271,7 +271,6 @@ void Reset()
   // The VIRTUAL PROGRAM BUTTONS are not defined in the variants
   // so its done here (for now)
 #ifndef VIRTUAL_PROGRAM_BUTTON_TRIS
-#define VIRTUAL_PROGRAM_BUTTON_TRIS
 
 #define USE_VIRTUAL_PROGRAM_BUTTON      1
 #define VIRTUAL_PROGRAM_BUTTON_TRIS     TRISDbits.TRISD4
