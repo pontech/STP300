@@ -12,7 +12,7 @@
 #include "pic32lib/Cron.h"
 
 Cron cron(micros);
-#line 15 "STP300.pde"
+#line 16 "STP300.pde"
 
 typedef struct {
   us8 movingCurrent; //TVAL is seven bits us8 is plenty
@@ -162,6 +162,10 @@ void loop() {
     usb.advanceHead(usb.remaining());
     String stufftosend = usb.toString();
     axis.command(&stufftosend[0], &Serial);
+    if (Serial){
+      rs485.print(&stufftosend[0]);
+      rs485.print("\r");
+    }
     usb.restore(); //restore head and tail
     if((usb.toString()[0] == '/') && (axis.parseNumber(&(usb.toString()[1])) == ReadJumper())) {
       usb.nextToken();
@@ -222,6 +226,11 @@ void loop() {
     String stufftosend = rs485.toString();
     //Serial.println(stufftosend);
     axis.command(&stufftosend[0], &MySerial0);
+    if (Serial) //if USB Serial is connected
+    {
+      Serial.print(&stufftosend[0]);
+      Serial.print("\r");
+    }
     rs485.restore(); //restore head and tail
     if((rs485.toString()[0] == '/') && (axis.parseNumber(&(rs485.toString()[1])) == ReadJumper())) {
       rs485.nextToken();
