@@ -294,6 +294,11 @@ void L6472::command(char* input, Stream* IOStream)
   }
 }
 
+void L6472::BoardId(char newId)
+{
+  _BOARD_ID = newId;
+}
+
 int L6472::init2(float current, float hold_current)
 {
 	int res = 0;

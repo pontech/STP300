@@ -271,6 +271,7 @@ class L6472{
 	void command(char* input, Stream* IOStream);
 	int parseNumber(char* s);
 	unsigned char findSpaceOffset(char* s);
+	void BoardId(char newId);	
 
 	//int init(float current, float hold_current);
   int init(float current, float hold_current, bool userawcurrent = false);
@@ -343,7 +344,7 @@ class L6472{
 	unsigned long SpdCalc(float stepsPerSec);
 	unsigned int Param(unsigned int value, byte bit_len);
 	byte Xfer(byte data); 
-	
+
 	int _MOSI;
 	int _MISO;
 	int _SCK;

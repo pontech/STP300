@@ -15,20 +15,28 @@ Cron cron(micros);
 #line 16 "STP300.pde"
 
 typedef struct {
-  us8 movingCurrent; //TVAL is seven bits us8 is plenty
-  us8 holdingCurrent;
+  us8 BoardId;
   bool homeswitchnc;
   bool stophomingonly;
+  us16 maxSpeed;
+  us16 minSpeed;
+  us16 acceleration;
+  us8 currentMoving;
+  us8 currentHolding;
   us8 structend;
 } ram_struct;
 
 ram_struct ram;
 
 void set_default_ram() {
-  ram.movingCurrent = 47; //TVAL is seven bits us8 is plenty
-  ram.holdingCurrent = 15;
+  ram.BoardId = 0;
   ram.homeswitchnc = true;
   ram.stophomingonly = false;
+  ram.maxSpeed = 63;
+  ram.minSpeed = 42;
+  ram.acceleration = 55;
+  ram.currentMoving = 47;
+  ram.currentHolding = 6;
   ram.structend = 0xA5;
 }
 void eeprom_in(us8* Data,us16 eeprom_adress,us16 bytes) {
@@ -56,7 +64,6 @@ TokenParser usb(&Serial);
 SerialHalf MySerial0(&Serial0, Enable485, true);
 TokenParser rs485(&MySerial0);
 
-unsigned char BOARD_ID = 0;
 const int pJP0 = 46;
 const int pJP1 = 45;
 const int pJP2 = 48;
@@ -92,7 +99,7 @@ unsigned char ReadJumper()
   {
     val += 4;
   }
-  return val;
+  return val + ram.BoardId;
 }
 
 void flash() {
@@ -140,6 +147,7 @@ void setup() {
     set_default_ram();
 
   Setup_dSPIN(axis);
+  copySettingsToDevice();
   axis.hardStop();
   
   pinMode(posHome,INPUT);
@@ -148,6 +156,26 @@ void setup() {
   cron.add(flash);
 }
 
+void copySettingsToRam()
+{
+  ram.maxSpeed = axis.GetParam(MAX_SPEED);
+  ram.minSpeed = axis.GetParam(MIN_SPEED);
+  ram.acceleration = axis.GetParam(ACC);
+  ram.currentMoving = axis.GetParam(TVAL_RUN);
+  ram.currentHolding = axis.GetParam(TVAL_HOLD);
+}
+
+void copySettingsToDevice()
+{
+  axis.SetParam(MAX_SPEED, ram.maxSpeed);
+  axis.SetParam(MIN_SPEED, ram.minSpeed);
+  axis.SetParam(ACC, ram.acceleration);
+  axis.SetParam(DECEL, ram.acceleration);
+  axis.SetParam(TVAL_RUN, ram.currentMoving);
+  axis.SetParam(TVAL_ACC, ram.currentMoving);
+  axis.SetParam(TVAL_DEC, ram.currentMoving);
+  axis.SetParam(TVAL_HOLD, ram.currentHolding);
+}
 void loop() {
   cron.scheduler();
   if(!ram.stophomingonly || axis.getHRunning()) //if motor is homing or homingonly not set
@@ -157,6 +185,7 @@ void loop() {
   }
   
   if(usb.scan()) {
+    axis.BoardId(ReadJumper());
 //    properties.evaluate(usb);
     usb.save(); //save head and tail
     usb.advanceHead(usb.remaining());
@@ -175,6 +204,11 @@ void loop() {
         digitalWrite(RelayOut,hold);
         usb.print("OK\r");
       }
+      else if(usb.compare("boardid")){
+        usb.nextToken();
+        ram.BoardId = usb.toVariant().toInt();
+        usb.print("OK\r");
+      }
       else if(usb.compare("switchtype")){
         usb.nextToken();
         int hold = usb.toVariant().toInt();
@@ -189,7 +223,7 @@ void loop() {
           usb.print("0\r");
         }
         //save setting to eeprom
-        eeprom_in((us8*)&ram,0,sizeof(ram));
+        //eeprom_in((us8*)&ram,0,sizeof(ram));
       }
       else if(usb.compare("stoptype")){
         usb.nextToken();
@@ -205,7 +239,26 @@ void loop() {
           usb.print("0\r");
         }
         //save setting to eeprom
+        //eeprom_in((us8*)&ram,0,sizeof(ram));
+      }
+      else if(usb.compare("wss")){
+        usb.print("Ok\r");
+        copySettingsToRam();
+        //save setting to eeprom
         eeprom_in((us8*)&ram,0,sizeof(ram));
+      }
+      else if(usb.compare("getparam")){
+        usb.nextToken();
+        int hold = usb.toVariant().toInt();
+        Serial.print(axis.GetParam((us8)hold),DEC);
+        Serial.print("\r");
+      }
+      else if(usb.compare("setparam")){
+        usb.nextToken();
+        int hold = usb.toVariant().toInt();
+        usb.nextToken();
+        axis.SetParam((us8)hold,usb.toVariant().toInt());
+        Serial.print("OK\r");
       }
       else if(usb.compare("reset")){
         Serial.println("Close serial terminal, resetting board in...");
@@ -220,6 +273,7 @@ void loop() {
     }
   }
   if(rs485.scan()) {
+    axis.BoardId(ReadJumper());
 //    properties.evaluate(rs485);
     rs485.save(); //save head and tail
     rs485.advanceHead(rs485.remaining());
@@ -240,6 +294,11 @@ void loop() {
         digitalWrite(RelayOut,hold);
         rs485.print("OK\r");
       }
+      else if(rs485.compare("boardid")){
+        rs485.nextToken();
+        ram.BoardId = rs485.toVariant().toInt();
+        rs485.print("OK\r");
+      }
       else if(rs485.compare("switchtype")){
         rs485.nextToken();
         int hold = rs485.toVariant().toInt();
@@ -254,7 +313,7 @@ void loop() {
           rs485.print("0\r");
         }
         //save setting to eeprom
-        eeprom_in((us8*)&ram,0,sizeof(ram));
+        //eeprom_in((us8*)&ram,0,sizeof(ram));
       }
       else if(rs485.compare("stoptype")){
         rs485.nextToken();
@@ -270,7 +329,7 @@ void loop() {
           rs485.print("0\r");
         }
         //save setting to eeprom
-        eeprom_in((us8*)&ram,0,sizeof(ram));
+        //eeprom_in((us8*)&ram,0,sizeof(ram));
       }
     }
   }
