@@ -94,7 +94,7 @@ void L6472::command(char* input, Stream* IOStream)
     }
     else if(strncmp(rxBuffParsPoint, "V?",2) == 0)  // Report a version number
     {
-      sprintf(str, "STP100 V2.3%s",lineend);
+      sprintf(str, "STP300 V1.0%s",lineend);
       _IOStream->print(str);
     }
     else if(strncmp(rxBuffParsPoint, "MI",2) == 0)  // Move Absolute
@@ -211,7 +211,7 @@ void L6472::command(char* input, Stream* IOStream)
     {
       rxBuffParsPoint += findSpaceOffset(rxBuffParsPoint);
       cmmdVal = parseNumber(rxBuffParsPoint);
-      sprintf(str, "SetSpeedMax:%d%s", cmmdVal,lineend);
+      sprintf(str, "%d%s", cmmdVal,lineend);
       _IOStream->print(str);
               
       cmmdVal = (cmmdVal>0x000003FF) ? 0x000003FF : cmmdVal;
@@ -220,14 +220,14 @@ void L6472::command(char* input, Stream* IOStream)
     }      
     else if(strncmp(rxBuffParsPoint, "RSD",3) == 0)  // get Speed Max
     {
-      sprintf(str, "GetSpeedMax:%d%s", GetParam(MAX_SPEED),lineend);
+      sprintf(str, "%d%s", GetParam(MAX_SPEED),lineend);
       _IOStream->print(str);
     }      
     else if(strncmp(rxBuffParsPoint, "SM",2) == 0)  // Set Speed Min
     {
       rxBuffParsPoint += findSpaceOffset(rxBuffParsPoint);
       cmmdVal = parseNumber(rxBuffParsPoint);
-      sprintf(str, "SetSpeedMin:%d%s", cmmdVal,lineend);
+      sprintf(str, "%d%s", cmmdVal,lineend);
       _IOStream->print(str);
               
       cmmdVal = (cmmdVal>0x00000FFF) ? 0x00000FFF : cmmdVal;
@@ -236,14 +236,14 @@ void L6472::command(char* input, Stream* IOStream)
     }      
     else if(strncmp(rxBuffParsPoint, "RSM",3) == 0)  // get Speed Min
     {
-      sprintf(str, "GetSpeedMin:%d%s", GetParam(MIN_SPEED),lineend);
+      sprintf(str, "%d%s", GetParam(MIN_SPEED),lineend);
       _IOStream->print(str);
     }      
     else if(strncmp(rxBuffParsPoint, "SA",2) == 0)  // Set Accel
     {
       rxBuffParsPoint += findSpaceOffset(rxBuffParsPoint);
       cmmdVal = parseNumber(rxBuffParsPoint);
-      sprintf(str, "SetAccel:%d%s", cmmdVal,lineend);
+      sprintf(str, "%d%s", cmmdVal,lineend);
       _IOStream->print(str);
               
       cmmdVal = (cmmdVal>0x00000FFF) ? 0x00000FFF : cmmdVal;
@@ -254,14 +254,14 @@ void L6472::command(char* input, Stream* IOStream)
     }      
     else if(strncmp(rxBuffParsPoint, "RSA",3) == 0)  // get Accel
     {
-      sprintf(str, "GetAccel:%d%s", GetParam(ACC),lineend);
+      sprintf(str, "%d%s", GetParam(ACC),lineend);
       _IOStream->print(str);
     }      
     else if(strncmp(rxBuffParsPoint, "SCM",3) == 0)  // Set current moving
     {
       rxBuffParsPoint += findSpaceOffset(rxBuffParsPoint);
       cmmdVal = parseNumber(rxBuffParsPoint);
-      sprintf(str, "SetCurrentMoving:%d%s", cmmdVal,lineend);
+      sprintf(str, "%d%s", cmmdVal,lineend);
       _IOStream->print(str);
               
       cmmdVal = (cmmdVal>0x000007F) ? 0x000007F : cmmdVal;
@@ -272,14 +272,14 @@ void L6472::command(char* input, Stream* IOStream)
     }      
     else if(strncmp(rxBuffParsPoint, "RSCM",4) == 0)  // get current moving
     {
-      sprintf(str, "GetCurrentMoving:%d%s", GetParam(TVAL_RUN),lineend);
+      sprintf(str, "%d%s", GetParam(TVAL_RUN),lineend);
       _IOStream->print(str);
     }      
     else if(strncmp(rxBuffParsPoint, "SCH",3) == 0)  // Set current holding
     {
       rxBuffParsPoint += findSpaceOffset(rxBuffParsPoint);
       cmmdVal = parseNumber(rxBuffParsPoint);
-      sprintf(str, "SetCurrentHold:%d%s", cmmdVal,lineend);
+      sprintf(str, "%d%s", cmmdVal,lineend);
       _IOStream->print(str);
               
       cmmdVal = (cmmdVal>0x000007F) ? 0x000007F : cmmdVal;
@@ -288,7 +288,7 @@ void L6472::command(char* input, Stream* IOStream)
     }      
     else if(strncmp(rxBuffParsPoint, "RSCH",4) == 0)  // get current holding
     {
-      sprintf(str, "GetCurrentHold:%d%s", GetParam(TVAL_HOLD),lineend);
+      sprintf(str, "%d%s", GetParam(TVAL_HOLD),lineend);
       _IOStream->print(str);
     }      
   }

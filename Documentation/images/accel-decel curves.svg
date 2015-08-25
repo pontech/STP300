@@ -14,8 +14,11 @@
    viewBox="0 0 744.09448819 1052.3622047"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
-   sodipodi:docname="accel-decel curves.svg">
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="accel-decel curves.svg"
+   inkscape:export-filename="C:\subversion\mpide_STP300\Documentation\images\accel-decel curves.png"
+   inkscape:export-xdpi="97.238388"
+   inkscape:export-ydpi="97.238388">
   <defs
      id="defs4">
     <marker
@@ -154,16 +157,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.49497475"
-     inkscape:cx="-5.59303"
-     inkscape:cy="724.37003"
+     inkscape:zoom="0.7"
+     inkscape:cx="148.67984"
+     inkscape:cy="716.85141"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1366"
-     inkscape:window-height="721"
-     inkscape:window-x="-4"
-     inkscape:window-y="-4"
+     inkscape:window-height="746"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata7">
