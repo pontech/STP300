@@ -186,7 +186,6 @@ void loop() {
   
   if(usb.scan()) {
     axis.BoardId(ReadJumper());
-//    properties.evaluate(usb);
     usb.save(); //save head and tail
     usb.advanceHead(usb.remaining());
     String stufftosend = usb.toString();
@@ -196,89 +195,13 @@ void loop() {
       rs485.print("\r");
     }
     usb.restore(); //restore head and tail
-    if((usb.toString()[0] == '/') && (axis.parseNumber(&(usb.toString()[1])) == ReadJumper())) {
-      usb.nextToken();
-      if(usb.compare("relay")){
-        usb.nextToken();
-        int hold = usb.toVariant().toInt();
-        digitalWrite(RelayOut,hold);
-        usb.print("OK\r");
-      }
-      else if(usb.compare("boardid")){
-        usb.nextToken();
-        ram.BoardId = usb.toVariant().toInt();
-        usb.print("OK\r");
-      }
-      else if(usb.compare("switchtype")){
-        usb.nextToken();
-        int hold = usb.toVariant().toInt();
-        if(hold > 0)
-        {
-          ram.homeswitchnc = true;
-          usb.print("1\r");
-        }
-        else
-        {
-          ram.homeswitchnc = false;
-          usb.print("0\r");
-        }
-        //save setting to eeprom
-        //eeprom_in((us8*)&ram,0,sizeof(ram));
-      }
-      else if(usb.compare("stoptype")){
-        usb.nextToken();
-        int hold = usb.toVariant().toInt();
-        if(hold > 0)
-        {
-          ram.stophomingonly = true;
-          usb.print("1\r");
-        }
-        else
-        {
-          ram.stophomingonly = false;
-          usb.print("0\r");
-        }
-        //save setting to eeprom
-        //eeprom_in((us8*)&ram,0,sizeof(ram));
-      }
-      else if(usb.compare("wss")){
-        usb.print("Ok\r");
-        copySettingsToRam();
-        //save setting to eeprom
-        eeprom_in((us8*)&ram,0,sizeof(ram));
-      }
-      else if(usb.compare("getparam")){
-        usb.nextToken();
-        int hold = usb.toVariant().toInt();
-        Serial.print(axis.GetParam((us8)hold),DEC);
-        Serial.print("\r");
-      }
-      else if(usb.compare("setparam")){
-        usb.nextToken();
-        int hold = usb.toVariant().toInt();
-        usb.nextToken();
-        axis.SetParam((us8)hold,usb.toVariant().toInt());
-        Serial.print("OK\r");
-      }
-      else if(usb.compare("reset")){
-        Serial.println("Close serial terminal, resetting board in...");
-        us8 sec;
-        for( sec = 5; sec >= 1; sec-- ) {
-          Serial.print(sec, DEC);
-          Serial.println(" seconds...");
-          delay(1000);
-        }
-        Reset();
-      }
-    }
+    processInput(usb);
   }
   if(rs485.scan()) {
     axis.BoardId(ReadJumper());
-//    properties.evaluate(rs485);
     rs485.save(); //save head and tail
     rs485.advanceHead(rs485.remaining());
     String stufftosend = rs485.toString();
-    //Serial.println(stufftosend);
     axis.command(&stufftosend[0], &MySerial0);
     if (Serial) //if USB Serial is connected
     {
@@ -286,51 +209,81 @@ void loop() {
       Serial.print("\r");
     }
     rs485.restore(); //restore head and tail
-    if((rs485.toString()[0] == '/') && (axis.parseNumber(&(rs485.toString()[1])) == ReadJumper())) {
-      rs485.nextToken();
-      if(rs485.compare("relay")){
-        rs485.nextToken();
-        int hold = rs485.toVariant().toInt();
-        digitalWrite(RelayOut,hold);
-        rs485.print("OK\r");
+    processInput(rs485);
+  }
+}
+char spbuf[20];
+void processInput(TokenParser& parser)
+{
+  if((parser.toString()[0] == '/') && (axis.parseNumber(&(parser.toString()[1])) == ReadJumper())) {
+    parser.nextToken();
+    if(parser.compare("relay")){
+      parser.nextToken();
+      int hold = parser.toVariant().toInt();
+      digitalWrite(RelayOut,hold);
+      parser.print("OK\r");
+    }
+    else if(parser.compare("boardid")){
+      parser.nextToken();
+      ram.BoardId = parser.toVariant().toInt();
+      parser.print("OK\r");
+    }
+    else if(parser.compare("switchtype")){
+      parser.nextToken();
+      int hold = parser.toVariant().toInt();
+      if(hold > 0)
+      {
+        ram.homeswitchnc = true;
+        parser.print("1\r");
       }
-      else if(rs485.compare("boardid")){
-        rs485.nextToken();
-        ram.BoardId = rs485.toVariant().toInt();
-        rs485.print("OK\r");
+      else
+      {
+        ram.homeswitchnc = false;
+        parser.print("0\r");
       }
-      else if(rs485.compare("switchtype")){
-        rs485.nextToken();
-        int hold = rs485.toVariant().toInt();
-        if(hold > 0)
-        {
-          ram.homeswitchnc = true;
-          rs485.print("1\r");
-        }
-        else
-        {
-          ram.homeswitchnc = false;
-          rs485.print("0\r");
-        }
-        //save setting to eeprom
-        //eeprom_in((us8*)&ram,0,sizeof(ram));
+    }
+    else if(parser.compare("stoptype")){
+      parser.nextToken();
+      int hold = parser.toVariant().toInt();
+      if(hold > 0)
+      {
+        ram.stophomingonly = true;
+        parser.print("1\r");
       }
-      else if(rs485.compare("stoptype")){
-        rs485.nextToken();
-        int hold = rs485.toVariant().toInt();
-        if(hold > 0)
-        {
-          ram.stophomingonly = true;
-          rs485.print("1\r");
-        }
-        else
-        {
-          ram.stophomingonly = false;
-          rs485.print("0\r");
-        }
-        //save setting to eeprom
-        //eeprom_in((us8*)&ram,0,sizeof(ram));
+      else
+      {
+        ram.stophomingonly = false;
+        parser.print("0\r");
       }
+    }
+    else if(usb.compare("wss")){
+      parser.print("OK\r");
+      copySettingsToRam();
+      //save setting to eeprom
+      eeprom_in((us8*)&ram,0,sizeof(ram));
+    }
+    else if(parser.compare("getparam")){
+      parser.nextToken();
+      int hold = parser.toVariant().toInt();
+      snprintf(spbuf,20,"%d\r",axis.GetParam((us8)hold));
+      parser.print(spbuf);
+    }
+    else if(usb.compare("setparam")){
+      parser.nextToken();
+      int hold = parser.toVariant().toInt();
+      parser.nextToken();
+      axis.SetParam((us8)hold,parser.toVariant().toInt());
+      parser.print("OK\r");
+    }
+    else if(parser.compare("reset")){
+      parser.print("Close serial terminal, resetting board in...\r");
+      us8 sec;
+      for( sec = 5; sec >= 1; sec-- ) {
+        snprintf(spbuf,20,"%d seconds...\r",sec);
+        parser.print(spbuf);
+        delay(1000);
+      }
+      Reset();
     }
   }
 }
