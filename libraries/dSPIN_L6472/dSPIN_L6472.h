@@ -265,13 +265,13 @@ class L6472{
 
   public:
 
-    L6472(char BOARD_ID, int MOSIPin, int MISOPin, int SCKPin, int SSPin, int RSTPin);
+    L6472(unsigned char BOARD_ID, int MOSIPin, int MISOPin, int SCKPin, int SSPin, int RSTPin);
 
 	void setupPort();
 	void command(char* input, Stream* IOStream);
 	int parseNumber(char* s);
 	unsigned char findSpaceOffset(char* s);
-	void BoardId(char newId);	
+	void BoardId(unsigned char newId);	
 
 	//int init(float current, float hold_current);
   int init(float current, float hold_current, bool userawcurrent = false);
@@ -350,7 +350,7 @@ class L6472{
 	int _SCK;
 	int _SS;
 	int _RST;
-	char _BOARD_ID;
+	unsigned char _BOARD_ID;
 	Stream* _IOStream;
 	long _DestinationPosition;
 	long _current;

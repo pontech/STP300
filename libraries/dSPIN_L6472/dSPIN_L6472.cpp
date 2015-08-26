@@ -8,7 +8,7 @@
 #include <dSPIN_L6472.h>
 //#include <SPI.h>
 
-L6472::L6472(char BOARD_ID, int MOSIPin, int MISOPin, int SCKPin, int SSPin, int RSTPin)
+L6472::L6472(unsigned char BOARD_ID, int MOSIPin, int MISOPin, int SCKPin, int SSPin, int RSTPin)
 {
 	_MOSI = MOSIPin;
 	_MISO = MISOPin;
@@ -294,7 +294,7 @@ void L6472::command(char* input, Stream* IOStream)
   }
 }
 
-void L6472::BoardId(char newId)
+void L6472::BoardId(unsigned char newId)
 {
   _BOARD_ID = newId;
 }
