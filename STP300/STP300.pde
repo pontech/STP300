@@ -58,7 +58,8 @@ void eeprom_out(us16 eeprom_adress,us8* Data,us16 bytes) {
 //    set_default_ram();
 
 #define Enable485 68
-#define RelayOut 28
+#define Relay1Out 28
+#define Relay2Out 29
 
 TokenParser usb(&Serial);
 SerialHalf MySerial0(&Serial0, Enable485, true);
@@ -139,8 +140,10 @@ void setup() {
   pinMode(DEBUGLED,OUTPUT);
   pinMode(Enable485,OUTPUT);
   digitalWrite(Enable485, LOW);
-  pinMode(RelayOut,OUTPUT);
-  digitalWrite(RelayOut,LOW);
+  pinMode(Relay1Out,OUTPUT);
+  digitalWrite(Relay1Out,LOW);
+  pinMode(Relay2Out,OUTPUT);
+  digitalWrite(Relay2Out,LOW);
 
   eeprom_out(0,(us8*)&ram,sizeof(ram)); //get structure from memory
   if (ram.structend != 0xA5)
@@ -220,7 +223,7 @@ void processInput(TokenParser& parser)
     if(parser.compare("relay")){
       parser.nextToken();
       int hold = parser.toVariant().toInt();
-      digitalWrite(RelayOut,hold);
+      digitalWrite(Relay1Out,hold);
       parser.print("OK\r");
     }
     else if(parser.compare("boardid")){
