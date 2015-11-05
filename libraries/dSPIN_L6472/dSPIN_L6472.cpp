@@ -139,26 +139,26 @@ void L6472::command(char* input, Stream* IOStream)
       sprintf(str, "OK%s",lineend);
       _IOStream->print(str);
     }  
-    else if(strncmp(rxBuffParsPoint, "HI",2) == 0)  // Home at Speed and direction
+    else if(strncmp(rxBuffParsPoint, "HI",2) == 0)  // Halt Immediately
     {
       hardStop();
       _HRunning = false;
       sprintf(str, "OK%s",lineend);
       _IOStream->print(str);
     }  
-    else if(strncmp(rxBuffParsPoint, "H0",2) == 0)  // Home at Speed and direction
+    else if(strncmp(rxBuffParsPoint, "H0",2) == 0)  // Halt with deceleration
     {
       softStop();                                            
       _HRunning = false;
       sprintf(str, "OK%s",lineend);
       _IOStream->print(str);
     }  
-    else if(strncmp(rxBuffParsPoint, "HS",2) == 0)  // Home at Speed and direction
+    else if(strncmp(rxBuffParsPoint, "HS",2) == 0)  // Print out L6472 Config Register
     {
       sprintf(str, "CONFIG:%X%s", GetParam(0x18),lineend);
       _IOStream->print(str);
     }  
-    else if(strncmp(rxBuffParsPoint, "RC",2) == 0)  // Get Position
+    else if(strncmp(rxBuffParsPoint, "RC",2) == 0)  // Read Current (Position)
     {
 //        sprintf(str, "%d\r", getPos());
 //        _IOStream->print(str);
@@ -170,7 +170,7 @@ void L6472::command(char* input, Stream* IOStream)
       sprintf(str, "%d%s", (int)hold,lineend);
       _IOStream->print(str);
     }
-    else if(strncmp(rxBuffParsPoint, "RX",2) == 0)  // Get direction
+    else if(strncmp(rxBuffParsPoint, "RX",2) == 0)  // Read Delta Sign SignOf(Destination - Current)
     {
       unsigned int stat = GetParam(STATUS);
       if((stat & STATUS_MOT_STATUS) == 0)
@@ -185,23 +185,23 @@ void L6472::command(char* input, Stream* IOStream)
         _IOStream->print(str);
       }
     }
-    else if(strncmp(rxBuffParsPoint, "RT",2) == 0)
+    else if(strncmp(rxBuffParsPoint, "RT",2) == 0)  // Read Delta (Destination - Current)
     {
       sprintf(str, "%d%s", getDest()-getPos(),lineend);
       _IOStream->print(str);
     }
-    else if(strncmp(rxBuffParsPoint, "RD",2) == 0)
+    else if(strncmp(rxBuffParsPoint, "RD",2) == 0)  // Read Destination (Position)
     {
       sprintf(str, "%d%s", getDest(),lineend);
       _IOStream->print(str);
     }
-    else if(strncmp(rxBuffParsPoint, "SP",2) == 0)
+    else if(strncmp(rxBuffParsPoint, "SP",2) == 0)  // Stepper Powered
     {
       hardStop();
       sprintf(str, "OK%s",lineend);
       _IOStream->print(str);
     }
-    else if(strncmp(rxBuffParsPoint, "SO",2) == 0)
+    else if(strncmp(rxBuffParsPoint, "SO",2) == 0)  // Stepper Off
     {
       free();
       sprintf(str, "OK%s",lineend);
