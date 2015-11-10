@@ -1,3 +1,6 @@
 [submodule "STP300/pic32lib"]
 	path = STP300/pic32lib
 	url = https://github.com/pontech/pic32lib.git
+[submodule "libraries/dSPIN_L6472"]
+	path = libraries/dSPIN_L6472
+	url = ssh://git@pontech.dyndns.org/~/arduino/libraries/dSPIN_L6472
