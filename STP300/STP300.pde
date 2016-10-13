@@ -23,6 +23,8 @@ typedef struct {
   us16 acceleration;
   us8 currentMoving;
   us8 currentHolding;
+  s16 stepspastsenorpos;
+  s16 stepspastsensorneg;
   us8 structend;
 } ram_struct;
 
@@ -37,6 +39,8 @@ void set_default_ram() {
   ram.acceleration = 55;
   ram.currentMoving = 47;
   ram.currentHolding = 6;
+  ram.stepspastsenorpos = 0;
+  ram.stepspastsensorneg = 0;
   ram.structend = 0xA5;
 }
 void eeprom_in(us8* Data,us16 eeprom_adress,us16 bytes) {
@@ -181,10 +185,18 @@ void copySettingsToDevice()
 }
 void loop() {
   cron.scheduler();
-  if(!ram.stophomingonly || axis.getHRunning()) //if motor is homing or homingonly not set
+  if((!ram.stophomingonly || axis.getHRunning()) && axis.isBusy()) //if motor is homing or homingonly not set
   {
-    axis.sensorStop(posHome, ram.homeswitchnc, true);
-    axis.sensorStop(negHome, ram.homeswitchnc, false);
+    if(axis.sensorStop(posHome, ram.homeswitchnc, true))
+    {
+      axis.move(ram.stepspastsenorpos);
+      while(axis.isBusy()){};
+    }
+    if(axis.sensorStop(negHome, ram.homeswitchnc, false))
+    {
+      axis.move(ram.stepspastsensorneg*(-1));
+      while(axis.isBusy()){};
+    }
   }
   
   if(usb.scan()) {
@@ -277,6 +289,22 @@ void processInput(TokenParser& parser)
       parser.nextToken();
       axis.SetParam((us8)hold,parser.toVariant().toInt());
       parser.print("OK\r");
+    }
+    else if(parser.compare("spsp")){
+      if(parser.nextToken())
+      {
+        ram.stepspastsenorpos = parser.toVariant().toInt();
+      }
+      snprintf(spbuf,20,"%d\r",ram.stepspastsenorpos);
+      parser.print(spbuf);
+    }
+    else if(parser.compare("spsn")){
+      if(parser.nextToken())
+      {
+        ram.stepspastsensorneg = parser.toVariant().toInt();
+      }
+      snprintf(spbuf,20,"%d\r",ram.stepspastsensorneg);
+      parser.print(spbuf);
     }
     else if(parser.compare("reset")){
       parser.print("Close serial terminal, resetting board in...\r");
