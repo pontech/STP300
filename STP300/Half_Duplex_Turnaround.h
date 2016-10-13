@@ -1,3 +1,12 @@
+#if (ARDUINO >= 100)
+#define returntype size_t
+#define returnstatement return n;
+#define returnsaveval size_t n =
+#else
+#define returntype void
+#define returnstatement
+#define returnsaveval
+#endif
 #include <wprogram.h>
 #include <HardwareSerial.h>
 
@@ -19,23 +28,26 @@ class SerialHalf : public Stream {
     pinMode(_turnaroudpin,OUTPUT);
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
   };
-  void write(uint8_t in) {
+  returntype write(uint8_t in) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.write(in);
+    returnsaveval _thisSerial.write(in);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void write(const char *str) {
+  returntype write(const char *str) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.write(str);
+    returnsaveval _thisSerial.write(str);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void write(const uint8_t *buffer, size_t size) {
+  returntype write(const uint8_t *buffer, size_t size) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.write(buffer,size);
+    returnsaveval _thisSerial.write(buffer,size);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
   
   int available() {
@@ -54,116 +66,134 @@ class SerialHalf : public Stream {
     _thisSerial.flush();
   }
   
-  void print(const String &in) {
+  returntype print(const String &in) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.print(in);
+    returnsaveval _thisSerial.print(in);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void print(const char* in) {
+  returntype print(const char* in) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.print(in);
+    returnsaveval _thisSerial.print(in);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,((HIGH^_normaly_low)&1));
+    returnstatement
   };
-  void print(char in, int type = PRINT_BYTE) {
+  returntype print(char in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.print(in, type);
+    returnsaveval _thisSerial.print(in, base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void print(unsigned char in, int type = PRINT_BYTE) {
+  returntype print(unsigned char in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.print(in,type);
+    returnsaveval _thisSerial.print(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void print(int in, int type = PRINT_DEC) {
+  returntype print(int in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.print(in,type);
+    returnsaveval _thisSerial.print(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void print(unsigned int in, int type = PRINT_DEC) {
+  returntype print(unsigned int in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.print(in,type);
+    returnsaveval _thisSerial.print(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void print(long in, int type = PRINT_DEC) {
+  returntype print(long in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.print(in,type);
+    returnsaveval _thisSerial.print(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void print(unsigned long in, int type = PRINT_DEC) {
+  returntype print(unsigned long in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.print(in,type);
+    returnsaveval _thisSerial.print(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void print(double in, int type = 2) {
+  returntype print(double in, int type = 2) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.print(in,type);
+    returnsaveval _thisSerial.print(in,type);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
   
-  void println(const String &s) {
+  returntype println(const String &s) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
     delayMicroseconds(5);
-    _thisSerial.println(s);
+    returnsaveval _thisSerial.println(s);
     waitForTransmitToComplete();
     delay(100);
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void println(const char* in) {
+  returntype println(const char* in) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.println(in);
+    returnsaveval _thisSerial.println(in);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void println(char in, int type = PRINT_BYTE) {
+  returntype println(char in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.println(in,type);
+    returnsaveval _thisSerial.println(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void println(unsigned char in, int type = PRINT_BYTE) {
+  returntype println(unsigned char in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.println(in,type);
+    returnsaveval _thisSerial.println(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement;
   };
-  void println(int in, int type = PRINT_DEC) {
+  returntype println(int in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.println(in,type);
+    returnsaveval _thisSerial.println(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void println(unsigned int in, int type = PRINT_DEC) {
+  returntype println(unsigned int in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.println(in,type);
+    returnsaveval _thisSerial.println(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void println(long in, int type = PRINT_DEC) {
+  returntype println(long in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.println(in,type);
+    returnsaveval _thisSerial.println(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void println(unsigned long in, int type = PRINT_DEC) {
+  returntype println(unsigned long in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.println(in,type);
+    returnsaveval _thisSerial.println(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
-  void println(double in, int type = 2) {
+  returntype println(double in, int digits = 2) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    _thisSerial.println(in,type);
+    returnsaveval _thisSerial.println(in,digits);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
+    returnstatement
   };
   void waitForTransmitToComplete()
   {
