@@ -74,7 +74,7 @@ const int pJP1 = 45;
 const int pJP2 = 48;
 const int pJP3 = 59;
 
-L6472 axis(ReadJumper(), 104, 103, 102, 18, 71); //Board_ID, Response stream, MOSI, MISO, SCK, SS, RST
+L6472 axis(ReadJumper(), 104, 103, 102, 18, 71, &safeToMove); //Board_ID, Response stream, MOSI, MISO, SCK, SS, RST
 //L6472 axis(ReadJumper(), &Serial0, 104, 103, 102, 18, 71); //Board_ID, Response stream, MOSI, MISO, SCK, SS, RST
 //L6472 axis(ReadJumper(), &Serial, 104, 103, 102, 18, 71); //Board_ID, Response stream, MOSI, MISO, SCK, SS, RST
 
@@ -316,6 +316,22 @@ void processInput(TokenParser& parser)
       }
       Reset();
     }
+  }
+}
+bool safeToMove(bool directionPositive)
+{
+  if(!ram.stophomingonly) //if motor is homing or homingonly not set
+  {
+    if(directionPositive)
+    {
+      //Serial.println((!digitalRead(posHome) && ram.homeswitchnc) || (digitalRead(posHome) && !ram.homeswitchnc),DEC);
+      return (!digitalRead(posHome) && ram.homeswitchnc) || (digitalRead(posHome) && !ram.homeswitchnc);
+    } else {
+      //Serial.println((!digitalRead(negHome) && ram.homeswitchnc) || (digitalRead(negHome) && !ram.homeswitchnc),DEC);
+      return (!digitalRead(negHome) && ram.homeswitchnc) || (digitalRead(negHome) && !ram.homeswitchnc);
+    }
+  } else {
+    return true;
   }
 }
 void Reset()
