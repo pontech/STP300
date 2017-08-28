@@ -271,7 +271,7 @@ void processInput(TokenParser& parser)
         parser.print("0\r");
       }
     }
-    else if(usb.compare("wss")){
+    else if(parser.compare("wss")){
       parser.print("OK\r");
       copySettingsToRam();
       //save setting to eeprom
@@ -283,7 +283,7 @@ void processInput(TokenParser& parser)
       snprintf(spbuf,20,"%d\r",axis.GetParam((us8)hold));
       parser.print(spbuf);
     }
-    else if(usb.compare("setparam")){
+    else if(parser.compare("setparam")){
       parser.nextToken();
       int hold = parser.toVariant().toInt();
       parser.nextToken();
