@@ -11,6 +11,13 @@
 #include "pic32lib/Properties.h"
 #include "pic32lib/Cron.h"
 
+// Prototypes we should not need.
+unsigned char ReadJumper();
+void processInput(TokenParser& parser);
+void Reset();
+void copySettingsToDevice();
+
+
 Cron cron(micros);
 #line 16 "STP300.pde"
 
