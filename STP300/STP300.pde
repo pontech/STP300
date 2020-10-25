@@ -12,7 +12,7 @@
 #include "pic32lib/Cron.h"
 
 Cron cron(micros);
-#line 16 "STP300.pde"
+//#line 16 "STP300.pde"
 
 typedef struct {
   us8 BoardId;
