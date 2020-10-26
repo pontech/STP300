@@ -3,4 +3,4 @@
 	url = https://github.com/pontech/pic32lib.git
 [submodule "libraries/dSPIN_L6472"]
 	path = libraries/dSPIN_L6472
-	url = ssh://git@pontech.dyndns.org/~/arduino/libraries/dSPIN_L6472
+	url = git@github.com:pontech/dSPIN_L6472.git
