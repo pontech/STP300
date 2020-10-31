@@ -14,6 +14,54 @@
 Cron cron(micros);
 //#line 16 "STP300.pde"
 
+
+//////////////////////////////////////////////////////////
+// GPIO Definitions Outputs
+//////////////////////////////////////////////////////////
+
+// Why defines and not const uint16_t?
+#define Enable485 68
+#define Relay1Out 28
+#define Relay2Out 29
+
+// Why in and not const uint16_t?
+const int pJP0 = 46;
+const int pJP1 = 45;
+const int pJP2 = 48;
+const int pJP3 = 59;
+
+//////////////////////////////////////////////////////////
+// GPIO Definitions Inputs
+//////////////////////////////////////////////////////////
+
+// Why defines and not const uint16_t?
+#define posHome    69
+#define negHome    70
+#define DEBUGLED 80
+#define Enable485 68
+
+//////////////////////////////////////////////////////////
+// Token Parser and Serial Communication Objects
+//////////////////////////////////////////////////////////
+
+TokenParser usb(&Serial);
+SerialHalf MySerial0(&Serial0, Enable485, true);
+TokenParser rs485(&MySerial0);
+
+//////////////////////////////////////////////////////////
+// Stepper motor object
+//////////////////////////////////////////////////////////
+
+L6472 axis(ReadJumper(), 104, 103, 102, 18, 71, &safeToMove); //Board_ID, Response stream, MOSI, MISO, SCK, SS, RST
+//L6472 axis(ReadJumper(), &Serial0, 104, 103, 102, 18, 71); //Board_ID, Response stream, MOSI, MISO, SCK, SS, RST
+//L6472 axis(ReadJumper(), &Serial, 104, 103, 102, 18, 71); //Board_ID, Response stream, MOSI, MISO, SCK, SS, RST
+
+Properties properties(24);  // Does not appear to be being used
+
+//////////////////////////////////////////////////////////
+// NVM Settings
+//////////////////////////////////////////////////////////
+
 typedef struct {
   us8 BoardId;
   bool homeswitchnc;
@@ -33,7 +81,7 @@ ram_struct ram;
 void set_default_ram() {
   ram.BoardId = 0;
   ram.homeswitchnc = true;
-  ram.stophomingonly = false;
+  ram.stophomingonly = false; // If this is false the board can hang without proper hardware
   ram.maxSpeed = 63;
   ram.minSpeed = 42;
   ram.acceleration = 55;
@@ -61,30 +109,43 @@ void eeprom_out(us16 eeprom_adress,us8* Data,us16 bytes) {
 //  if (ram.structend != 42)
 //    set_default_ram();
 
-#define Enable485 68
-#define Relay1Out 28
-#define Relay2Out 29
+void copySettingsToRam()
+{
+  ram.maxSpeed = axis.GetParam(MAX_SPEED);
+  ram.minSpeed = axis.GetParam(MIN_SPEED);
+  ram.acceleration = axis.GetParam(ACC);
+  ram.currentMoving = axis.GetParam(TVAL_RUN);
+  ram.currentHolding = axis.GetParam(TVAL_HOLD);
+}
 
-TokenParser usb(&Serial);
-SerialHalf MySerial0(&Serial0, Enable485, true);
-TokenParser rs485(&MySerial0);
+void copySettingsToDevice()
+{
+  axis.SetParam(MAX_SPEED, ram.maxSpeed);
+  axis.SetParam(MIN_SPEED, ram.minSpeed);
+  axis.SetParam(ACC, ram.acceleration);
+  axis.SetParam(DECEL, ram.acceleration); // todo: 3 Ask Mike S. I think we use acceleration here becuase we do not have a decel
+  axis.SetParam(TVAL_RUN, ram.currentMoving);
+  axis.SetParam(TVAL_ACC, ram.currentMoving);
+  axis.SetParam(TVAL_DEC, ram.currentMoving);
+  axis.SetParam(TVAL_HOLD, ram.currentHolding);
+}
 
-const int pJP0 = 46;
-const int pJP1 = 45;
-const int pJP2 = 48;
-const int pJP3 = 59;
+//////////////////////////////////////////////////////////
+// Task to flash LED
+//////////////////////////////////////////////////////////
 
-L6472 axis(ReadJumper(), 104, 103, 102, 18, 71, &safeToMove); //Board_ID, Response stream, MOSI, MISO, SCK, SS, RST
-//L6472 axis(ReadJumper(), &Serial0, 104, 103, 102, 18, 71); //Board_ID, Response stream, MOSI, MISO, SCK, SS, RST
-//L6472 axis(ReadJumper(), &Serial, 104, 103, 102, 18, 71); //Board_ID, Response stream, MOSI, MISO, SCK, SS, RST
+void flash() {
+  Cron::CronDetail *self = cron.self();
 
-Properties properties(24);
+  digitalWrite(DEBUGLED, self->temp);
 
-// inputs
-#define posHome    69
-#define negHome    70
-#define DEBUGLED 80
-#define Enable485 68
+  self->temp ^= 1;
+  self->yield = micros() + 1000000;
+}
+
+//////////////////////////////////////////////////////////
+// Read Board ID Jumppers
+//////////////////////////////////////////////////////////
 
 unsigned char ReadJumper()
 {
@@ -105,15 +166,6 @@ unsigned char ReadJumper()
     val += 4;
   }
   return val + ram.BoardId;
-}
-
-void flash() {
-  Cron::CronDetail *self = cron.self();
-
-  digitalWrite(DEBUGLED, self->temp);
-
-  self->temp ^= 1;
-  self->yield = micros() + 1000000;
 }
 
 void Setup_dSPIN(L6472 &motor)
@@ -163,26 +215,6 @@ void setup() {
   cron.add(flash);
 }
 
-void copySettingsToRam()
-{
-  ram.maxSpeed = axis.GetParam(MAX_SPEED);
-  ram.minSpeed = axis.GetParam(MIN_SPEED);
-  ram.acceleration = axis.GetParam(ACC);
-  ram.currentMoving = axis.GetParam(TVAL_RUN);
-  ram.currentHolding = axis.GetParam(TVAL_HOLD);
-}
-
-void copySettingsToDevice()
-{
-  axis.SetParam(MAX_SPEED, ram.maxSpeed);
-  axis.SetParam(MIN_SPEED, ram.minSpeed);
-  axis.SetParam(ACC, ram.acceleration);
-  axis.SetParam(DECEL, ram.acceleration);
-  axis.SetParam(TVAL_RUN, ram.currentMoving);
-  axis.SetParam(TVAL_ACC, ram.currentMoving);
-  axis.SetParam(TVAL_DEC, ram.currentMoving);
-  axis.SetParam(TVAL_HOLD, ram.currentHolding);
-}
 void loop() {
   cron.scheduler();
   if((!ram.stophomingonly || axis.getHRunning()) && axis.isBusy()) //if motor is homing or homingonly not set
@@ -227,7 +259,7 @@ void loop() {
     processInput(rs485);
   }
 }
-char spbuf[20];
+char spbuf[40];
 void processInput(TokenParser& parser)
 {
   if((parser.toString()[0] == '/') && (axis.parseNumber(&(parser.toString()[1])) == ReadJumper())) {
@@ -306,6 +338,19 @@ void processInput(TokenParser& parser)
       snprintf(spbuf,20,"%d\r",ram.stepspastsensorneg);
       parser.print(spbuf);
     }
+    else if(parser.compare("ram?")){
+      snprintf(spbuf,120,"           ram.BoardId: %d\r\n",ram.BoardId);           parser.print(spbuf);
+      snprintf(spbuf,120,"      ram.homeswitchnc: %d\r\n",ram.homeswitchnc);      parser.print(spbuf);
+      snprintf(spbuf,120,"    ram.stophomingonly: %d\r\n",ram.stophomingonly);    parser.print(spbuf);
+      snprintf(spbuf,120,"          ram.maxSpeed: %d\r\n",ram.maxSpeed);          parser.print(spbuf);
+      snprintf(spbuf,120,"          ram.minSpeed: %d\r\n",ram.minSpeed);          parser.print(spbuf);
+      snprintf(spbuf,120,"      ram.acceleration: %d\r\n",ram.acceleration);      parser.print(spbuf);
+      snprintf(spbuf,120,"     ram.currentMoving: %d\r\n",ram.currentMoving);     parser.print(spbuf);
+      snprintf(spbuf,120,"    ram.currentHolding: %d\r\n",ram.currentHolding);    parser.print(spbuf);
+      snprintf(spbuf,120," ram.stepspastsenorpos: %d\r\n",ram.stepspastsenorpos); parser.print(spbuf);
+      snprintf(spbuf,120,"ram.stepspastsensorneg: %d\r\n",ram.stepspastsensorneg);parser.print(spbuf);
+      snprintf(spbuf,120,"         ram.structend: %x\r\n",ram.structend);         parser.print(spbuf);
+    }
     else if(parser.compare("reset")){
       parser.print("Close serial terminal, resetting board in...\r");
       us8 sec;
@@ -318,6 +363,11 @@ void processInput(TokenParser& parser)
     }
   }
 }
+
+//////////////////////////////////////////////////////////
+// Stepper Motor Safe to move callback
+//////////////////////////////////////////////////////////
+
 bool safeToMove(bool directionPositive)
 {
   if(!ram.stophomingonly) //if motor is homing or homingonly not set
@@ -334,6 +384,11 @@ bool safeToMove(bool directionPositive)
     return true;
   }
 }
+
+//////////////////////////////////////////////////////////
+// Reset (this should be part of the boards.c file
+//////////////////////////////////////////////////////////
+
 void Reset()
 {
   // The VIRTUAL PROGRAM BUTTONS are not defined in the variants
