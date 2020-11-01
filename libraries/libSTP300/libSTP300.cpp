@@ -153,7 +153,7 @@ void setup_STP300() {
 // Loops
 //////////////////////////////////////////////////////////
 
-void loop_stp300_homing_task()
+void loop_stp300_homing()
 {
   if((!ram.stophomingonly || axis.getHRunning()) && axis.isBusy()) //if motor is homing or homingonly not set
   {
@@ -168,6 +168,11 @@ void loop_stp300_homing_task()
       while(axis.isBusy()){};
     }
   }
+}
+
+void loop_stp300_homing_task(int id, void* tptr)
+{
+	loop_stp300_homing();
 }
 
 char spbuf[40];
@@ -306,6 +311,13 @@ void loop_stp300_serial_parser()
     processInput(rs485);
   }
 }
+
+void loop_stp300_serial_parser_task(int id, void* tptr)
+{
+	loop_stp300_serial_parser();
+}
+
+
 
 //////////////////////////////////////////////////////////
 // Reset (this should be part of the boards.c file

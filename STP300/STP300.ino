@@ -7,6 +7,8 @@
 void setup() {
   setup_STP300();
   createHeartbeat(DEBUGLED, 2000);
+  createTask(loop_stp300_homing_task, 100, TASK_ENABLE, (void*)NULL);
+  createTask(loop_stp300_serial_parser_task, 10, TASK_ENABLE, (void*)NULL);
 }
 
 //////////////////////////////////////////////////////////
@@ -14,8 +16,6 @@ void setup() {
 //////////////////////////////////////////////////////////
 
 void loop() {
-  loop_stp300_homing_task();
-  loop_stp300_serial_parser();
 }
 
 //////////////////////////////////////////////////////////

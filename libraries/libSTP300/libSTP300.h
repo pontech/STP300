@@ -86,9 +86,11 @@ bool safeToMove(bool directionPositive);
 void setup_STP300();
 
 // Loops
-void loop_stp300_homing_task();
+void loop_stp300_homing();
+void loop_stp300_homing_task(int id, void* tptr);
 void processInput(TokenParser& parser);
 void loop_stp300_serial_parser();
+void loop_stp300_serial_parser_task(int id, void* tptr);
 
 // Reset
 void Reset();
