@@ -1,3 +1,6 @@
+#ifndef _Half_Duplex_Turnaround_H_
+#define _Half_Duplex_Turnaround_H_
+
 #if (ARDUINO >= 100)
 #define RETURN_TYPE size_t
 #define RETURN_STATEMENT return n;
@@ -205,3 +208,5 @@ class SerialHalf : public Stream {
      asm("nop\n nop\n nop\n nop\n nop\n nop\n nop\n nop\n");
   };
 };
+
+#endif
