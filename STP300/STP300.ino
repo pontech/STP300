@@ -168,6 +168,10 @@ unsigned char ReadJumper()
   return val + ram.BoardId;
 }
 
+//////////////////////////////////////////////////////////
+// Setup Code
+//////////////////////////////////////////////////////////
+
 void Setup_dSPIN(L6472 &motor)
 {
   int res = 0;
@@ -215,8 +219,12 @@ void setup() {
   cron.add(flash);
 }
 
-void loop() {
-  cron.scheduler();
+//////////////////////////////////////////////////////////
+// Loops
+//////////////////////////////////////////////////////////
+
+void loop_stp300_homing_task()
+{
   if((!ram.stophomingonly || axis.getHRunning()) && axis.isBusy()) //if motor is homing or homingonly not set
   {
     if(axis.sensorStop(posHome, ram.homeswitchnc, true))
@@ -230,7 +238,10 @@ void loop() {
       while(axis.isBusy()){};
     }
   }
-  
+}
+
+void loop_stp300_serial_parser()
+{
   if(usb.scan()) {
     axis.BoardId(ReadJumper());
     usb.save(); //save head and tail
@@ -259,6 +270,13 @@ void loop() {
     processInput(rs485);
   }
 }
+
+void loop() {
+  cron.scheduler(); // For flashing the LED
+  loop_stp300_homing_task();
+  loop_stp300_serial_parser();
+}
+
 char spbuf[40];
 void processInput(TokenParser& parser)
 {
