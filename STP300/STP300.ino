@@ -1,4 +1,4 @@
-// MPIDE Version 20140316
+// chipKIT-core 2.1.0 - MPIDE Version 20140316 (untested)
 #include <Wire.h>
 #include "Half_Duplex_Turnaround.h"
 #include <SPI.h>
@@ -240,43 +240,6 @@ void loop_stp300_homing_task()
   }
 }
 
-void loop_stp300_serial_parser()
-{
-  if(usb.scan()) {
-    axis.BoardId(ReadJumper());
-    usb.save(); //save head and tail
-    usb.advanceHead(usb.remaining());
-    String stufftosend = usb.toString();
-    axis.command(&stufftosend[0], &Serial);
-    if (Serial){
-      rs485.print(&stufftosend[0]);
-      rs485.print("\r");
-    }
-    usb.restore(); //restore head and tail
-    processInput(usb);
-  }
-  if(rs485.scan()) {
-    axis.BoardId(ReadJumper());
-    rs485.save(); //save head and tail
-    rs485.advanceHead(rs485.remaining());
-    String stufftosend = rs485.toString();
-    axis.command(&stufftosend[0], &MySerial0);
-    if (Serial) //if USB Serial is connected
-    {
-      Serial.print(&stufftosend[0]);
-      Serial.print("\r");
-    }
-    rs485.restore(); //restore head and tail
-    processInput(rs485);
-  }
-}
-
-void loop() {
-  cron.scheduler(); // For flashing the LED
-  loop_stp300_homing_task();
-  loop_stp300_serial_parser();
-}
-
 char spbuf[40];
 void processInput(TokenParser& parser)
 {
@@ -381,6 +344,43 @@ void processInput(TokenParser& parser)
       Reset();
     }
   }
+}
+
+void loop_stp300_serial_parser()
+{
+  if(usb.scan()) {
+    axis.BoardId(ReadJumper());
+    usb.save(); //save head and tail
+    usb.advanceHead(usb.remaining());
+    String stufftosend = usb.toString();
+    axis.command(&stufftosend[0], &Serial);
+    if (Serial){
+      rs485.print(&stufftosend[0]);
+      rs485.print("\r");
+    }
+    usb.restore(); //restore head and tail
+    processInput(usb);
+  }
+  if(rs485.scan()) {
+    axis.BoardId(ReadJumper());
+    rs485.save(); //save head and tail
+    rs485.advanceHead(rs485.remaining());
+    String stufftosend = rs485.toString();
+    axis.command(&stufftosend[0], &MySerial0);
+    if (Serial) //if USB Serial is connected
+    {
+      Serial.print(&stufftosend[0]);
+      Serial.print("\r");
+    }
+    rs485.restore(); //restore head and tail
+    processInput(rs485);
+  }
+}
+
+void loop() {
+  cron.scheduler(); // For flashing the LED
+  loop_stp300_homing_task();
+  loop_stp300_serial_parser();
 }
 
 //////////////////////////////////////////////////////////
