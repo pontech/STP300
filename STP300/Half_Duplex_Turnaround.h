@@ -1,11 +1,11 @@
 #if (ARDUINO >= 100)
-#define returntype size_t
-#define returnstatement return n;
-#define returnsaveval size_t n =
+#define RETURN_TYPE size_t
+#define RETURN_STATEMENT return n;
+#define RETURN_SAVE_VALUE size_t n =
 #else
-#define returntype void
-#define returnstatement
-#define returnsaveval
+#define RETURN_TYPE void
+#define RETURN_STATEMENT
+#define RETURN_SAVE_VALUE
 #endif
 #include <wprogram.h>
 #include <HardwareSerial.h>
@@ -28,26 +28,26 @@ class SerialHalf : public Stream {
     pinMode(_turnaroudpin,OUTPUT);
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
   };
-  returntype write(uint8_t in) {
+  RETURN_TYPE write(uint8_t in) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.write(in);
+    RETURN_SAVE_VALUE _thisSerial.write(in);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype write(const char *str) {
+  RETURN_TYPE write(const char *str) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.write(str);
+    RETURN_SAVE_VALUE _thisSerial.write(str);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype write(const uint8_t *buffer, size_t size) {
+  RETURN_TYPE write(const uint8_t *buffer, size_t size) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.write(buffer,size);
+    RETURN_SAVE_VALUE _thisSerial.write(buffer,size);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
   
   int available() {
@@ -66,134 +66,134 @@ class SerialHalf : public Stream {
     _thisSerial.flush();
   }
   
-  returntype print(const String &in) {
+  RETURN_TYPE print(const String &in) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.print(in);
+    RETURN_SAVE_VALUE _thisSerial.print(in);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype print(const char* in) {
+  RETURN_TYPE print(const char* in) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.print(in);
+    RETURN_SAVE_VALUE _thisSerial.print(in);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,((HIGH^_normaly_low)&1));
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype print(char in, int base) {
+  RETURN_TYPE print(char in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.print(in, base);
+    RETURN_SAVE_VALUE _thisSerial.print(in, base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype print(unsigned char in, int base) {
+  RETURN_TYPE print(unsigned char in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.print(in,base);
+    RETURN_SAVE_VALUE _thisSerial.print(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype print(int in, int base) {
+  RETURN_TYPE print(int in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.print(in,base);
+    RETURN_SAVE_VALUE _thisSerial.print(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype print(unsigned int in, int base) {
+  RETURN_TYPE print(unsigned int in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.print(in,base);
+    RETURN_SAVE_VALUE _thisSerial.print(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype print(long in, int base) {
+  RETURN_TYPE print(long in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.print(in,base);
+    RETURN_SAVE_VALUE _thisSerial.print(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype print(unsigned long in, int base) {
+  RETURN_TYPE print(unsigned long in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.print(in,base);
+    RETURN_SAVE_VALUE _thisSerial.print(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype print(double in, int type = 2) {
+  RETURN_TYPE print(double in, int type = 2) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.print(in,type);
+    RETURN_SAVE_VALUE _thisSerial.print(in,type);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
   
-  returntype println(const String &s) {
+  RETURN_TYPE println(const String &s) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
     delayMicroseconds(5);
-    returnsaveval _thisSerial.println(s);
+    RETURN_SAVE_VALUE _thisSerial.println(s);
     waitForTransmitToComplete();
     delay(100);
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype println(const char* in) {
+  RETURN_TYPE println(const char* in) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.println(in);
+    RETURN_SAVE_VALUE _thisSerial.println(in);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype println(char in, int base) {
+  RETURN_TYPE println(char in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.println(in,base);
+    RETURN_SAVE_VALUE _thisSerial.println(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype println(unsigned char in, int base) {
+  RETURN_TYPE println(unsigned char in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.println(in,base);
+    RETURN_SAVE_VALUE _thisSerial.println(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement;
+    RETURN_STATEMENT;
   };
-  returntype println(int in, int base) {
+  RETURN_TYPE println(int in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.println(in,base);
+    RETURN_SAVE_VALUE _thisSerial.println(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype println(unsigned int in, int base) {
+  RETURN_TYPE println(unsigned int in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.println(in,base);
+    RETURN_SAVE_VALUE _thisSerial.println(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype println(long in, int base) {
+  RETURN_TYPE println(long in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.println(in,base);
+    RETURN_SAVE_VALUE _thisSerial.println(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype println(unsigned long in, int base) {
+  RETURN_TYPE println(unsigned long in, int base) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.println(in,base);
+    RETURN_SAVE_VALUE _thisSerial.println(in,base);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
-  returntype println(double in, int digits = 2) {
+  RETURN_TYPE println(double in, int digits = 2) {
     digitalWrite(_turnaroudpin,LOW^_normaly_low);
-    returnsaveval _thisSerial.println(in,digits);
+    RETURN_SAVE_VALUE _thisSerial.println(in,digits);
     waitForTransmitToComplete();
     digitalWrite(_turnaroudpin,HIGH^_normaly_low);
-    returnstatement
+    RETURN_STATEMENT
   };
   void waitForTransmitToComplete()
   {
