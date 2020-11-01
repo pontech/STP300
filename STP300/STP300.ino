@@ -81,7 +81,7 @@ ram_struct ram;
 void set_default_ram() {
   ram.BoardId = 0;
   ram.homeswitchnc = true;
-  ram.stophomingonly = false; // If this is false the board can hang without proper hardware
+  ram.stophomingonly = true; // If this is false the board can hang without proper hardware
   ram.maxSpeed = 63;
   ram.minSpeed = 42;
   ram.acceleration = 55;
@@ -339,17 +339,18 @@ void processInput(TokenParser& parser)
       parser.print(spbuf);
     }
     else if(parser.compare("ram?")){
-      snprintf(spbuf,120,"           ram.BoardId: %d\r\n",ram.BoardId);           parser.print(spbuf);
-      snprintf(spbuf,120,"      ram.homeswitchnc: %d\r\n",ram.homeswitchnc);      parser.print(spbuf);
-      snprintf(spbuf,120,"    ram.stophomingonly: %d\r\n",ram.stophomingonly);    parser.print(spbuf);
-      snprintf(spbuf,120,"          ram.maxSpeed: %d\r\n",ram.maxSpeed);          parser.print(spbuf);
-      snprintf(spbuf,120,"          ram.minSpeed: %d\r\n",ram.minSpeed);          parser.print(spbuf);
-      snprintf(spbuf,120,"      ram.acceleration: %d\r\n",ram.acceleration);      parser.print(spbuf);
-      snprintf(spbuf,120,"     ram.currentMoving: %d\r\n",ram.currentMoving);     parser.print(spbuf);
-      snprintf(spbuf,120,"    ram.currentHolding: %d\r\n",ram.currentHolding);    parser.print(spbuf);
-      snprintf(spbuf,120," ram.stepspastsenorpos: %d\r\n",ram.stepspastsenorpos); parser.print(spbuf);
-      snprintf(spbuf,120,"ram.stepspastsensorneg: %d\r\n",ram.stepspastsensorneg);parser.print(spbuf);
-      snprintf(spbuf,120,"         ram.structend: %x\r\n",ram.structend);         parser.print(spbuf);
+      snprintf(spbuf,sizeof(spbuf),"\r\n");           parser.print(spbuf);
+      snprintf(spbuf,sizeof(spbuf),"           ram.BoardId: %d\r\n",ram.BoardId);           parser.print(spbuf);
+      snprintf(spbuf,sizeof(spbuf),"      ram.homeswitchnc: %d\r\n",ram.homeswitchnc);      parser.print(spbuf);
+      snprintf(spbuf,sizeof(spbuf),"    ram.stophomingonly: %d\r\n",ram.stophomingonly);    parser.print(spbuf);
+      snprintf(spbuf,sizeof(spbuf),"          ram.maxSpeed: %d\r\n",ram.maxSpeed);          parser.print(spbuf);
+      snprintf(spbuf,sizeof(spbuf),"          ram.minSpeed: %d\r\n",ram.minSpeed);          parser.print(spbuf);
+      snprintf(spbuf,sizeof(spbuf),"      ram.acceleration: %d\r\n",ram.acceleration);      parser.print(spbuf);
+      snprintf(spbuf,sizeof(spbuf),"     ram.currentMoving: %d\r\n",ram.currentMoving);     parser.print(spbuf);
+      snprintf(spbuf,sizeof(spbuf),"    ram.currentHolding: %d\r\n",ram.currentHolding);    parser.print(spbuf);
+      snprintf(spbuf,sizeof(spbuf)," ram.stepspastsenorpos: %d\r\n",ram.stepspastsenorpos); parser.print(spbuf);
+      snprintf(spbuf,sizeof(spbuf),"ram.stepspastsensorneg: %d\r\n",ram.stepspastsensorneg);parser.print(spbuf);
+      snprintf(spbuf,sizeof(spbuf),"         ram.structend: %x\r\n",ram.structend);         parser.print(spbuf);
     }
     else if(parser.compare("reset")){
       parser.print("Close serial terminal, resetting board in...\r");
@@ -413,4 +414,3 @@ void Reset()
   dummy = RSWRST; //read RSWRST register to trigger reset
   while(1); //prevent any unwanted code execution until reset occurs
 }
-
